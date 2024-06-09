@@ -80,9 +80,11 @@ def tcp_packet_handler(packet):
             
             if is_sent(packet):
             #    send(tcp_packet)
+                print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (details):{Style.DIM + Fore.RED}{packet.summary()} | Length:{len(packet)}{Style.RESET_ALL}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (bytes):{Style.RESET_ALL}{raw_payload}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (decoded):{Style.RESET_ALL}\n{payload_data}')
             else:
+                print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (details):{Style.DIM + Fore.RED}{packet.summary()} | Length:{len(packet)}{Style.RESET_ALL}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (byes):{Style.RESET_ALL}{raw_payload}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (decoded):{Style.RESET_ALL}\n{payload_data}')
 
