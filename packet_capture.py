@@ -18,6 +18,8 @@ local_ip = get_if_addr(conf.iface)
 
 hex_str = '2f77206c696562652a203c6f3a3a53656e64496e7075742c2025206e616d65'
 
+search_string = b"\x00\x00\x00<\x00o\x00:\x00:\x00 \x00%\x00 \x00n\x00a\x00m\x00e\x00"
+
 payload_bytes = bytes.fromhex(hex_str)
 
 blocked_sequence_hex = "3c6f3a3a53656e64496e7075742c2025206e616d65"
@@ -59,6 +61,17 @@ def block_payload(raw_payload):
     
     return False
 
+def block_packet(packet):
+    if TCP in packet and Raw in packet and search_string in bytes(packet[TCP].payload): # type: ignore
+        print(f'{Style.DIM + Fore.RED}Blocking packet with search string: {packet.summary()}{Style.RESET_ALL}')
+
+        ip_layer = IP(dst = packet[IP].src, src = packet[IP].dst) # type: ignore
+
+        rst_packet = TCP(dport = packet[TCP].sport, sport = packet[TCP].dport, flags = 'R', sex = packet[TCP].ack, ack = packet[TCP].seq + len(packet[TCP].payload)) # type: ignore
+
+        response_packet = ip_layer / rst_packet
+
+        send(response_packet)
 
 # In general this is just a fucking packet handler for TCP, checking TCP port 62000
 # what do you think it does? Change the port 62000 to the game of choices port
@@ -78,6 +91,9 @@ def tcp_packet_handler(packet):
             #    Converts the payload_datas into hex if there is a unicode decode error
                 payload_data = raw_payload.hex()
             
+            if search_string in raw_payload:
+                block_packet(packet)
+
             if is_sent(packet):
             #    send(tcp_packet)
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (details):{Style.DIM + Fore.RED}{packet.summary()} | Length:{len(packet)}{Style.RESET_ALL}')
@@ -87,11 +103,6 @@ def tcp_packet_handler(packet):
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (details):{Style.DIM + Fore.RED}{packet.summary()} | Length:{len(packet)}{Style.RESET_ALL}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (byes):{Style.RESET_ALL}{raw_payload}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (decoded):{Style.RESET_ALL}\n{payload_data}')
-
-            if '<o::SendInput, % name' in payload_data:
-                print(f'{Style.DIM + Fore.RED}<o::SendInput, % name was detected; Blocking the payload{Style.RESET_ALL}')
-
-                return
 
 # This does basically the same thing as the TCP packet handler but instead for UDP 
 # from port 50000 to 50201 so nothing special for other games replace the UDP ports
