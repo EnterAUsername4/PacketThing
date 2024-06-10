@@ -19,6 +19,7 @@ local_ip = get_if_addr(conf.iface)
 hex_str = '2f77206c696562652a203c6f3a3a53656e64496e7075742c2025206e616d65'
 
 search_string = b"\x00\x00\x00<\x00o\x00:\x00:\x00 \x00%\x00 \x00n\x00a\x00m\x00e\x00"
+search_string2 = b"\x00\x00\x00<\x00o\x00:\x00:\x00%\x00n\x00"
 
 payload_bytes = bytes.fromhex(hex_str)
 
@@ -67,7 +68,17 @@ def block_packet(packet):
 
         ip_layer = IP(dst = packet[IP].src, src = packet[IP].dst) # type: ignore
 
-        rst_packet = TCP(dport = packet[TCP].sport, sport = packet[TCP].dport, flags = 'R', sex = packet[TCP].ack, ack = packet[TCP].seq + len(packet[TCP].payload)) # type: ignore
+        rst_packet = TCP(dport = packet[TCP].sport, sport = packet[TCP].dport, flags = 'R', seq = packet[TCP].ack, ack = packet[TCP].seq + len(packet[TCP].payload)) # type: ignore
+
+        response_packet = ip_layer / rst_packet
+
+        send(response_packet)
+    if TCP in packet and Raw in packet and search_string2 in bytes(packet[TCP].payload): # type: ignore
+        print(f'{Style.DIM + Fore.RED}Blocking packet with search string: {packet.summary()}{Style.RESET_ALL}')
+
+        ip_layer = IP(dst = packet[IP].src, src = packet[IP].dst) # type: ignore
+
+        rst_packet = TCP(dport = packet[TCP].sport, sport = packet[TCP].dport, flags = 'R', seq = packet[TCP].ack, ack = packet[TCP].seq + len(packet[TCP].payload)) # type: ignore
 
         response_packet = ip_layer / rst_packet
 
@@ -93,6 +104,11 @@ def tcp_packet_handler(packet):
             
             if search_string in raw_payload:
                 block_packet(packet)
+                return
+
+            if search_string2 in raw_payload:
+                block_packet(packet)
+                return
 
             if is_sent(packet):
             #    send(tcp_packet)
