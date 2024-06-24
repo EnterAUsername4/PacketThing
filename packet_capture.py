@@ -7,6 +7,13 @@ from colorama import Style, Fore, Back
 
 # TODO Fix the TCP and UDP so they don't require "type: ignore" comment
 
+#!SECTION Logging Portion
+log_filename = 'packet_capture.log'
+logging.basicConfig(filename=log_filename, level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+#!SECTION End Of Logging Portion
+
 colorama.init()
 
 def Clear() -> None:
@@ -115,10 +122,16 @@ def tcp_packet_handler(packet):
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (details):{Style.DIM + Fore.RED}{packet.summary()} | Length:{len(packet)}{Style.RESET_ALL}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (bytes):{Style.RESET_ALL}{raw_payload}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Sent TCP Payload (decoded):{Style.RESET_ALL}\n{payload_data}')
+                logging.info('Received TCP Payload (details): %s | Length: %d', packet.summary(), len(packet))
+                logging.debug('Sent TCP Payload (bytes): %s', raw_payload)
+                logging.debug('Sent TCP Payload (decoded): %s', payload_data)
             else:
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (details):{Style.DIM + Fore.RED}{packet.summary()} | Length:{len(packet)}{Style.RESET_ALL}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (byes):{Style.RESET_ALL}{raw_payload}')
                 print(f'{Style.BRIGHT + Fore.GREEN}[{current_time()}] {Style.BRIGHT + Fore.BLUE}Received TCP Payload (decoded):{Style.RESET_ALL}\n{payload_data}')
+                logging.info('Received TCP Payload (details): %s | Length: %d', packet.summary(), len(packet))
+                logging.debug('Received TCP Payload (bytes): %s', raw_payload)
+                logging.debug('Received TCP Payload (decoded): %s', payload_data)
 
 # This does basically the same thing as the TCP packet handler but instead for UDP 
 # from port 50000 to 50201 so nothing special for other games replace the UDP ports
