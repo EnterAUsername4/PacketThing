@@ -1,6 +1,6 @@
 easy to use;
 read the .py file to change the ports
-> to install; install python from python.org
+> to install; install python from [Python](https://website-name.com)
 > after python is installed check to see pip works in the cmd
 > if pip does not work go to $installpath and add the path to system environment (search for environment with windows key)
 > click environment variables
